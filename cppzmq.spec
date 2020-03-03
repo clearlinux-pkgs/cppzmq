@@ -4,10 +4,10 @@
 #
 Name     : cppzmq
 Version  : 4.3.0
-Release  : 1
+Release  : 2
 URL      : https://github.com/zeromq/cppzmq/archive/v4.3.0.tar.gz
 Source0  : https://github.com/zeromq/cppzmq/archive/v4.3.0.tar.gz
-Summary  : No detailed summary available
+Summary  : Header-only C++ binding for libzmq (only CMake module)
 Group    : Development/Tools
 License  : BSD-3-Clause MIT
 Requires: cppzmq-data = %{version}-%{release}
@@ -37,6 +37,7 @@ Group: Development
 Requires: cppzmq-data = %{version}-%{release}
 Provides: cppzmq-devel = %{version}-%{release}
 Requires: cppzmq = %{version}-%{release}
+Requires: cppzmq = %{version}-%{release}
 
 %description dev
 dev components for the cppzmq package.
@@ -52,26 +53,32 @@ license components for the cppzmq package.
 
 %prep
 %setup -q -n cppzmq-4.3.0
+cd %{_builddir}/cppzmq-4.3.0
 
 %build
 export http_proxy=http://127.0.0.1:9/
 export https_proxy=http://127.0.0.1:9/
 export no_proxy=localhost,127.0.0.1,0.0.0.0
-export LANG=C
-export SOURCE_DATE_EPOCH=1556929021
+export LANG=C.UTF-8
+export SOURCE_DATE_EPOCH=1583269324
 mkdir -p clr-build
 pushd clr-build
-export LDFLAGS="${LDFLAGS} -fno-lto"
+# -Werror is for werrorists
+export GCC_IGNORE_WERROR=1
+export CFLAGS="$CFLAGS -fno-lto "
+export FCFLAGS="$CFLAGS -fno-lto "
+export FFLAGS="$CFLAGS -fno-lto "
+export CXXFLAGS="$CXXFLAGS -fno-lto "
 %cmake .. -DCPPZMQ_BUILD_TESTS=OFF
-make  %{?_smp_mflags} VERBOSE=1
+make  %{?_smp_mflags}  VERBOSE=1
 popd
 
 %install
-export SOURCE_DATE_EPOCH=1556929021
+export SOURCE_DATE_EPOCH=1583269324
 rm -rf %{buildroot}
 mkdir -p %{buildroot}/usr/share/package-licenses/cppzmq
-cp LICENSE %{buildroot}/usr/share/package-licenses/cppzmq/LICENSE
-cp external/gtest-demo/LICENSE %{buildroot}/usr/share/package-licenses/cppzmq/external_gtest-demo_LICENSE
+cp %{_builddir}/cppzmq-4.3.0/LICENSE %{buildroot}/usr/share/package-licenses/cppzmq/06c6b2191805315cbc96ae218f1edb66c17da4e3
+cp %{_builddir}/cppzmq-4.3.0/external/gtest-demo/LICENSE %{buildroot}/usr/share/package-licenses/cppzmq/fcc9d9d2e18ef8e8f9dc5bba08bc9a0712144ace
 pushd clr-build
 %make_install
 popd
@@ -85,9 +92,10 @@ popd
 
 %files dev
 %defattr(-,root,root,-)
-/usr/include/*.hpp
+/usr/include/zmq.hpp
+/usr/include/zmq_addon.hpp
 
 %files license
 %defattr(0644,root,root,0755)
-/usr/share/package-licenses/cppzmq/LICENSE
-/usr/share/package-licenses/cppzmq/external_gtest-demo_LICENSE
+/usr/share/package-licenses/cppzmq/06c6b2191805315cbc96ae218f1edb66c17da4e3
+/usr/share/package-licenses/cppzmq/fcc9d9d2e18ef8e8f9dc5bba08bc9a0712144ace
